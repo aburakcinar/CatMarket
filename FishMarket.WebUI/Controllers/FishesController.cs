@@ -17,6 +17,7 @@ namespace FishMarket.WebUI.Controllers
     [Route("[controller]/[action]")]
     public class FishesController : Controller
     {
+        // TODO : addreses must be put in config files
         private string baseAddr = "http://localhost:8081/api/fishes/v1";
         private string baseUploadAddr = "http://localhost:8081/api/upload/v1";
 
@@ -25,6 +26,7 @@ namespace FishMarket.WebUI.Controllers
         [AllowAnonymous]
         public IActionResult Index()
         {
+            /// TODO : Need to write FishMarket Api client 
             var resp = GetHttpClient().GetAsync($"{baseAddr}/list").Result;
 
             resp.EnsureSuccessStatusCode();
@@ -33,6 +35,8 @@ namespace FishMarket.WebUI.Controllers
 
             return View(JsonConvert.DeserializeObject<List<FishDefinitionViewModel>>(str));
         }
+
+        #region UploadPicture
 
         // GET: FishDefinition/Details/5
         [HttpGet("{id}")]
@@ -60,6 +64,10 @@ namespace FishMarket.WebUI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        #endregion
+
+        #region UpdatePrice
+
         [HttpGet("{id}")]
         public ActionResult UpdatePrice(int id)
         {
@@ -83,7 +91,7 @@ namespace FishMarket.WebUI.Controllers
 
             //msg.EnsureSuccessStatusCode();
 
-            if(!msg.IsSuccessStatusCode)
+            if (!msg.IsSuccessStatusCode)
             {
                 switch (msg.StatusCode)
                 {
@@ -96,6 +104,10 @@ namespace FishMarket.WebUI.Controllers
             return RedirectToAction(nameof(Index));
 
         }
+
+        #endregion
+
+        #region Create
 
         // GET: FishDefinition/Create
         public ActionResult Create()
@@ -131,20 +143,42 @@ namespace FishMarket.WebUI.Controllers
             }
         }
 
+        #endregion
+
+        #region Edit
+
         // GET: FishDefinition/Edit/5
+        [HttpGet("{id}")]
         public ActionResult Edit(int id)
         {
-            return View(new FishDefinitionViewModel { Id = id });
+            var resp = GetHttpClient().GetAsync($"{baseAddr}/get/{id}").Result;
+
+            resp.EnsureSuccessStatusCode();
+
+            var str = resp.Content.ReadAsStringAsync().Result;
+
+            return View(JsonConvert.DeserializeObject<FishDefinitionViewModel>(str));
         }
 
         // POST: FishDefinition/Edit/5
-        [HttpPost]
+        [HttpPost("{id}")]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, FishDefinitionViewModel model)
         {
             try
             {
-                // TODO: Add update logic here
+                HttpClient client = GetHttpClient();
+
+                var myContent = JsonConvert.SerializeObject(model);
+
+                var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+                using (var byteContent = new ByteArrayContent(buffer))
+                {
+                    byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    var result = client.PutAsync($"{baseAddr}/update/{id}", byteContent).Result;
+
+                    result.EnsureSuccessStatusCode();
+                }
 
                 return RedirectToAction(nameof(Index));
             }
@@ -154,20 +188,35 @@ namespace FishMarket.WebUI.Controllers
             }
         }
 
+        #endregion
+
+        #region Delete
+
         // GET: FishDefinition/Delete/5
+        [HttpGet("{id}")]
         public ActionResult Delete(int id)
         {
-            return View();
+            var resp = GetHttpClient().GetAsync($"{baseAddr}/get/{id}").Result;
+
+            resp.EnsureSuccessStatusCode();
+
+            var str = resp.Content.ReadAsStringAsync().Result;
+
+            return View(JsonConvert.DeserializeObject<FishDefinitionViewModel>(str));
         }
 
         // POST: FishDefinition/Delete/5
-        [HttpPost]
+        [HttpPost("{id}")]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
         {
             try
             {
-                // TODO: Add delete logic here
+                HttpClient client = GetHttpClient();
+
+                var result = client.DeleteAsync($"{baseAddr}/delete/{id}").Result;
+
+                result.EnsureSuccessStatusCode();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -177,6 +226,9 @@ namespace FishMarket.WebUI.Controllers
             }
         }
 
+        #endregion
+
+        #region Helper Methods
 
         private HttpClient GetHttpClient()
         {
@@ -185,5 +237,6 @@ namespace FishMarket.WebUI.Controllers
             return client;
         }
 
+        #endregion
     }
 }

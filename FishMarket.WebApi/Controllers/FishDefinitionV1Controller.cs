@@ -52,7 +52,7 @@ namespace FishMarket.WebApi.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}"), ActionName("price")]
-        public IActionResult Put(int id, [FromBody]decimal price)
+        public IActionResult UpdatePrice(int id, [FromBody]decimal price)
         {
             _unitOfWork.FishDefinitionRepository.UpdatePrice(id, price);
             var res = _unitOfWork.Save();
@@ -64,10 +64,31 @@ namespace FishMarket.WebApi.Controllers
                 return NotFound();
         }
 
-        //// DELETE api/values/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+        // PUT api/values/5
+        [HttpPut("{id}"), ActionName("update")]
+        public IActionResult Update(int id, [FromBody]FishDefinition model)
+        {
+            _unitOfWork.FishDefinitionRepository.Update(id, model);
+            var res = _unitOfWork.Save();
+            /// TODO : responses must be improved. In case of error, it must return 400.
+
+            if (res > 0)
+                return Ok();
+            else
+                return NotFound();
+        }
+
+        [HttpDelete("{id}"), ActionName("delete")]
+        public IActionResult Delete(int id)
+        {
+            _unitOfWork.FishDefinitionRepository.Delete(id);
+            var res = _unitOfWork.Save();
+            /// TODO : responses must be improved. In case of error, it must return 400.
+
+            if (res > 0)
+                return Ok();
+            else
+                return NotFound();
+        }
     }
 }

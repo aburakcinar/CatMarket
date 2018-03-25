@@ -52,6 +52,27 @@ namespace FishMarket.WebApi.Data.Repositories
             _context.FishDefinition.Add(entity);
         }
 
+        public void Update(int id, FishDefinition entity)
+        {
+            var item = _context.FishDefinition.FirstOrDefault(p => p.Id == id);
+
+            if (item != null)
+            {
+                item.Name = entity.Name;
+                item.Price = entity.Price;
+            }
+        }
+
+        public void Delete(int id)
+        {
+            var item = _context.FishDefinition.FirstOrDefault(p => p.Id == id);
+
+            if (item != null)
+            {
+                _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
+            }
+        }
+
         public void UpdatePrice(int id, decimal price)
         {
             ///TODO : Due to performance concerns, it can be execute direct update command.
