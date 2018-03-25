@@ -23,7 +23,6 @@ namespace FishMarket.WebUI.Controllers
 
         // GET: FishDefinition
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult Index()
         {
             /// TODO : Need to write FishMarket Api client 

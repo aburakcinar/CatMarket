@@ -5,14 +5,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using FishMarket.WebUI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FishMarket.WebUI.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
+        [AllowAnonymous]
         public IActionResult Index()
         {
-            return View();
+            return Redirect("/FishMarket/Index");
         }
 
         public IActionResult About()
