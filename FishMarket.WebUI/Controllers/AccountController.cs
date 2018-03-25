@@ -13,6 +13,9 @@ using Microsoft.Extensions.Options;
 using FishMarket.WebUI.Models;
 using FishMarket.WebUI.Models.AccountViewModels;
 using FishMarket.WebUI.Services;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace FishMarket.WebUI.Controllers
 {
@@ -65,6 +68,10 @@ namespace FishMarket.WebUI.Controllers
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+
+                    var token = GenerateToken(model.Email);
+
+
                     return RedirectToLocal(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -85,6 +92,25 @@ namespace FishMarket.WebUI.Controllers
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+
+
+        private string GenerateToken(string username)
+        {
+            var claims = new Claim[]
+            {
+                new Claim(ClaimTypes.Email, username),
+                new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds().ToString()),
+                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.Now.AddDays(7)).ToUnixTimeSeconds().ToString()),
+            };
+
+            var token = new JwtSecurityToken(
+                new JwtHeader(new SigningCredentials(
+                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes("FishMarket.Web.SecretKey.qqq123")),
+                                             SecurityAlgorithms.HmacSha256)),
+                new JwtPayload(claims));
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         [HttpGet]

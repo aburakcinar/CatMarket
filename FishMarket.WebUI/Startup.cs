@@ -14,6 +14,8 @@ using FishMarket.WebUI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace FishMarket.WebUI
 {
@@ -31,13 +33,13 @@ namespace FishMarket.WebUI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-        //    services.AddDbContext<ApplicationDbContext>(options =>
-        //        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            //    services.AddDbContext<ApplicationDbContext>(options =>
+            //        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             var sqlConnectionString = Configuration.GetConnectionString("DefaultConnection");
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseMySql(   
+                options.UseMySql(
                     sqlConnectionString
                 )
             );
@@ -73,6 +75,31 @@ namespace FishMarket.WebUI
                                  .Build();
                 config.Filters.Add(new AuthorizeFilter(policy));
             });
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = "JwtBearer";
+                options.DefaultChallengeScheme = "JwtBearer";
+            })
+            .AddJwtBearer("JwtBearer", jwtBearerOptions =>
+            {
+                jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("FishMarket.Web.qqq123")),
+
+                    ValidateIssuer = true,
+                    ValidIssuer = "FishMarket.Web",
+
+                    ValidateAudience = true,
+                    ValidAudience = "FishMarket.Web",
+
+                    ValidateLifetime = true, //validate the expiration and not before values in the token
+
+                    ClockSkew = TimeSpan.FromMinutes(5) //5 minute tolerance for the expiration date
+                };
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
