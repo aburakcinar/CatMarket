@@ -34,6 +34,19 @@ namespace FishMarket.WebApi.Data.Interfaces
         void Add(FishDefinition entity);
 
         /// <summary>
+        /// Updates existing fish type with model
+        /// updates only name and price properties
+        /// </summary>
+        /// <param name="entity"></param>
+        void Update(int id, FishDefinition entity);
+
+        /// <summary>
+        /// Deletes existing fish type
+        /// </summary>
+        /// <param name="id"></param>
+        void Delete(int id);
+
+        /// <summary>
         /// Updates the price of the fish type with given id
         /// </summary>
         /// <param name="id"></param>
