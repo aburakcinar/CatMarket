@@ -44,7 +44,7 @@ namespace FishMarket.WebApi.Controllers
 
         // POST api/values
         [HttpPost, ActionName("add")]
-        public void Post([FromBody]FishDefinition model)
+        public void Add([FromBody]FishDefinition model)
         {
             _unitOfWork.FishDefinitionRepository.Add(model);
             _unitOfWork.Save();

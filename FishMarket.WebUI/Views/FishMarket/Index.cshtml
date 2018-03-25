@@ -1,7 +1,39 @@
-﻿
+﻿@model IEnumerable<FishMarket.WebUI.Models.FishDefinition.FishDefinitionViewModel>
+
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Public Fish Market Page";
 }
 
-<h2>Fish Market</h2>
+<h2>Public Fish Market Page</h2>
 
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td id="td_price_@(item.Id)">
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>                
+            </tr>
+        }
+    </tbody>
+</table>
