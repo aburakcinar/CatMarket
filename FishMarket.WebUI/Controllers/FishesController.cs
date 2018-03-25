@@ -25,8 +25,6 @@ namespace FishMarket.WebUI.Controllers
         [AllowAnonymous]
         public IActionResult Index()
         {
-
-
             var resp = GetHttpClient().GetAsync($"{baseAddr}/list").Result;
 
             resp.EnsureSuccessStatusCode();
@@ -49,17 +47,54 @@ namespace FishMarket.WebUI.Controllers
         {
             using (var content = new MultipartFormDataContent("Upload----" + DateTime.Now.ToString()))
             {
-                var streamContent2 = new StreamContent(model.PictureFile.OpenReadStream());
-                streamContent2.Headers.Add("Content-Type", model.PictureFile.ContentType);
-                streamContent2.Headers.Add("Content-Disposition", $"form-data; name=\"file\"; filename=\"{model.PictureFile.Name}\"");
-                content.Add(streamContent2, "file");
+                var streamContent = new StreamContent(model.PictureFile.OpenReadStream());
+                streamContent.Headers.Add("Content-Type", model.PictureFile.ContentType);
+                streamContent.Headers.Add("Content-Disposition", $"form-data; name=\"file\"; filename=\"{model.PictureFile.Name}\"");
+                content.Add(streamContent, "file");
 
-                var message2 = GetHttpClient().PutAsync($"{baseUploadAddr}/replace/{model.Id}", content).Result;
+                var msg = GetHttpClient().PutAsync($"{baseUploadAddr}/replace/{model.Id}", content).Result;
 
-                message2.EnsureSuccessStatusCode();
+                msg.EnsureSuccessStatusCode();
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult UpdatePrice(int id)
+        {
+            var resp = GetHttpClient().GetAsync($"{baseAddr}/get/{id}").Result;
+
+            resp.EnsureSuccessStatusCode();
+
+            var str = resp.Content.ReadAsStringAsync().Result;
+
+            return View(JsonConvert.DeserializeObject<FishDefinitionViewModel>(str));
+        }
+
+        [HttpPost("{id}")]
+        [ValidateAntiForgeryToken]
+        public ActionResult UpdatePrice(int id, FishDefinitionViewModel model)
+        {
+            var priceContent = new StringContent(JsonConvert.SerializeObject(model.Price), System.Text.Encoding.UTF8, "application/json");
+            var client = GetHttpClient();
+            var msg = client.PutAsync($"{baseAddr}/price/{id}", priceContent).Result;
+
+
+            //msg.EnsureSuccessStatusCode();
+
+            if(!msg.IsSuccessStatusCode)
+            {
+                switch (msg.StatusCode)
+                {
+                    case HttpStatusCode.NotFound:
+                        ModelState.AddModelError("Price", "Price must be changed");
+                        return View(model);
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
+
         }
 
         // GET: FishDefinition/Create
@@ -87,17 +122,6 @@ namespace FishMarket.WebUI.Controllers
 
                     result.EnsureSuccessStatusCode();
                 }
-
-                //using (var content = new MultipartFormDataContent("Upload----" + DateTime.Now.ToString()))
-                //{
-                //    content.Add(new StringContent($"{{'name':'{collection["name"]}','price':'{collection["price"]}'}}"));
-
-                //    var resp = client.PostAsync($"{baseAddr}/add", content).Result;
-
-                //    resp.EnsureSuccessStatusCode();
-                //}
-
-                //var str = resp.Content.ReadAsStringAsync().Result;
 
                 return RedirectToAction(nameof(Index));
             }
